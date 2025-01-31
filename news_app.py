@@ -21,7 +21,26 @@ COUNTRIES = [
 DEFAULT_KEYWORDS = [
     "oil", "gas", "energy", "reservoir", "supply", "demand", "exploration", "production", "renewable",
     "petroleum", "natural gas", "refining", "pipeline", "offshore", "onshore", "CCUS", "carbon capture",
-    "emissions", "climate", "storage", "drilling", "shale", "LNG", "biofuel"
+    "emissions", "climate", "storage", "drilling", "shale", "LNG", "biofuel",  "oil", "gas", "energy", "reservoir", "supply", "demand",
+    "Shell", "BP", "Exxon", "Chevron", "Total", "Conoco", "Schlumberger", "HAL",
+    "Baker Hughes", "Statoil", "Petrobras", "Gazprom", "Aramco", "ADNOC", "ENI",
+    "Rosneft", "Repsol", "CNPC", "Sinopec", "CNOOC", "ONGC", "IOC", "BPCL",
+    "HPCL", "RIL", "Cairn", "OGDCL", "PPL", "MPCL", "PSO", "ARL", "Byco",
+    "NRL", "PARCO", "SNGPL", "SSGC", "Hascol", "Pak LNG", "TOR" , "oil", "gas", "energy", "reservoir", "supply", "demand",
+    "Shell", "BP", "ExxonMobil", "Chevron", "TotalEnergies",
+    "ConocoPhillips", "Schlumberger", "Halliburton", "Baker Hughes",
+    "Equinor", "Petrobras", "Gazprom", "Saudi Aramco", "ADNOC", "Eni",
+    "Rosneft", "Repsol", "CNPC", "Sinopec", "CNOOC",
+    "ONGC", "Indian Oil Corporation", "Bharat Petroleum", "Hindustan Petroleum",
+    "Reliance Industries", "Cairn Oil & Gas",
+    "Pakistan Petroleum Limited", "Oil & Gas Development Company Limited",
+    "Mari Petroleum Company Limited", "Pakistan State Oil", "Attock Refinery Limited",
+    "Byco Petroleum Pakistan Limited", "National Refinery Limited",
+    "Pak-Arab Refinery Limited", "Sui Northern Gas Pipelines Limited",
+    "Sui Southern Gas Company Limited", "Hascol Petroleum Limited", 
+    "Pak LNG Limited", "Tariq Oil Refinery",
+    "Ceylon Petroleum Corporation", "Lanka IOC", "Petrobangla",
+    "BAPEX", "Phillips 66", "Valero Energy", "Marathon Petroleum"
 ]
 
 # Streamlit App Setup
