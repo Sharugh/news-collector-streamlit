@@ -1,39 +1,42 @@
 import streamlit as st
-import pandas as pd
 import requests
+import pandas as pd
+from datetime import datetime
 
+# API Key
 API_KEY = "32c6b5f1df1642de8ff199fbe2d11f9d"
 
 # Country List
-countries = [
-    "Afghanistan", "Bangladesh", "Bhutan", "India", "Maldives", "Nepal", "Pakistan", "Sri Lanka", 
-    "United States", "China", "Russia", "Japan", "Germany", "United Kingdom", "France", "Italy", "Canada", "Australia",
-    "Brazil", "Mexico", "Indonesia", "South Korea", "Saudi Arabia", "South Africa", "Turkey", "Argentina", "Spain",
-    "Netherlands", "Sweden", "Switzerland", "Singapore", "Malaysia", "Thailand", "Philippines", "Vietnam", "Nigeria",
-    "Egypt", "United Arab Emirates", "Qatar", "Kuwait", "Norway", "Denmark", "Poland", "Belgium", "Austria",
-    "Czech Republic", "Finland", "Portugal", "New Zealand", "Greece", "Chile", "Colombia", "Peru", "Israel"
+COUNTRIES = [
+    "Afghanistan", "Bangladesh", "Bhutan", "India", "Maldives", "Nepal", "Pakistan", "Sri Lanka",
+    "United States", "Canada", "United Kingdom", "Germany", "France", "Italy", "Spain", "Russia",
+    "China", "Japan", "South Korea", "Australia", "New Zealand", "Brazil", "Mexico", "South Africa",
+    "Nigeria", "Egypt", "Turkey", "Saudi Arabia", "United Arab Emirates", "Argentina", "Colombia",
+    "Indonesia", "Thailand", "Malaysia", "Singapore", "Vietnam", "Philippines", "Netherlands",
+    "Sweden", "Norway", "Denmark", "Switzerland", "Poland", "Czech Republic", "Austria",
+    "Belgium", "Portugal", "Greece", "Hungary", "Finland", "Ireland"
 ]
 
-# Keywords
-keywords = [
-    "oil", "gas", "energy", "reservoir", "supply", "demand", "exploration", "production", "offshore", "onshore",
-    "refinery", "pipeline", "LNG", "natural gas", "fossil fuel", "petroleum", "hydrocarbon", "renewable energy",
-    "carbon capture", "emissions", "drilling", "upstream", "midstream", "downstream", "reserves", "EOR (Enhanced Oil Recovery)"
+# Frequent Keywords in Oil and Gas Industry
+DEFAULT_KEYWORDS = [
+    "oil", "gas", "energy", "reservoir", "supply", "demand", "exploration", "production", "renewable",
+    "petroleum", "natural gas", "refining", "pipeline", "offshore", "onshore", "CCUS", "carbon capture",
+    "emissions", "climate", "storage", "drilling", "shale", "LNG", "biofuel"
 ]
 
-# Streamlit App
-st.title("Oil & Gas News Collector")
+# Streamlit App Setup
+st.title("Energy and Oil & Gas News Collector")
+
+# User Inputs
 st.sidebar.header("Search Filters")
+search_query = st.sidebar.text_input("Enter Keywords", value=", ".join(DEFAULT_KEYWORDS))
+selected_country = st.sidebar.selectbox("Select a Country", ["All Countries"] + COUNTRIES)
+start_date = st.sidebar.date_input("Start Date", datetime(2024, 1, 1))
+end_date = st.sidebar.date_input("End Date", datetime.now())
 
-# Country Selection
-selected_country = st.sidebar.selectbox("Select a country", countries)
-
-# Keyword Search
-search_query = st.sidebar.text_input("Search for a specific keyword or phrase", "")
-
-# Input Date Range
-start_date = st.sidebar.date_input("Start date")
-end_date = st.sidebar.date_input("End date")
+# Validate Dates
+if start_date > end_date:
+    st.sidebar.error("Start date cannot be after end date.")
 
 # Fetch Articles
 if st.sidebar.button("Fetch News"):
@@ -44,10 +47,14 @@ if st.sidebar.button("Fetch News"):
         if articles:
             data = []
             for article in articles[:100]:  # Limit to 100 articles
-                if selected_country.lower() in article.get("description", "").lower():
+                description = article.get("description", "")
+                # Ensure the description is a string and filter by country
+                if selected_country == "All Countries" or (
+                    description and selected_country.lower() in description.lower()
+                ):
                     data.append({
                         "Title": article.get("title"),
-                        "Description": article.get("description"),
+                        "Description": description,
                         "Published At": article.get("publishedAt"),
                         "Source": article.get("source", {}).get("name"),
                         "URL": article.get("url")
@@ -68,3 +75,10 @@ if st.sidebar.button("Fetch News"):
             st.error("No articles found for the selected filters.")
     else:
         st.error("Failed to fetch news. Please check your API key or try again later.")
+
+# Footer
+st.write("\n---")
+st.write(
+    "This app collects the latest news articles related to energy and oil & gas industries, filtered by keywords and countries."
+)
+
