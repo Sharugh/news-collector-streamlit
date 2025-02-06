@@ -5,7 +5,7 @@ from datetime import datetime
 from io import BytesIO
 
 # Constants
-API_KEY = "YOUR_NEWSAPI_KEY_HERE"  # Replace with your valid NewsAPI key
+API_KEY = "32c6b5f1df1642de8ff199fbe2d11f9d"  # Replace with your valid NewsAPI key
 
 COUNTRIES = [
     "Afghanistan", "Bangladesh", "Bhutan", "India", "Maldives", "Nepal", "Pakistan", "Sri Lanka",
