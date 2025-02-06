@@ -2,11 +2,9 @@ import streamlit as st
 import requests
 import pandas as pd
 from datetime import datetime
-from io import BytesIO  # Import BytesIO for in-memory file handling
+from io import BytesIO 
 
-# Constants
-API_KEY = "a0c1c50cbbbed5659a779e082f9f1f00"  # Your GNews API key
-GNEWS_URL = "https://gnews.io/api/v4/search"
+API_KEY = "3087034a13564f75bfc769c0046e729c"  
 
 COUNTRIES = [
     "Afghanistan", "Bangladesh", "Bhutan", "India", "Maldives", "Nepal", "Pakistan", "Sri Lanka",
@@ -44,16 +42,14 @@ KEYWORDS = {
     }
 }
 
-# Function to format and limit query length
 def format_query(query):
     """Ensure the query follows API rules (space-separated, max 200 chars)."""
     query = query.strip()  # Remove extra spaces
     query = " ".join(query.split())  # Ensure proper spacing
     return query[:200]  # Trim to 200 characters to prevent errors
 
-# Fetch news articles from GNews API
 def fetch_articles(search_query, selected_country, start_date, end_date):
-    """Fetch articles from the GNews API while ensuring valid query formatting."""
+    """Fetch articles from the NewsAPI while ensuring valid query formatting."""
     if not search_query.strip():  # Ensure query is not empty
         st.error("Error: Search query is empty. Please enter valid keywords.")
         return None
@@ -88,7 +84,6 @@ def fetch_articles(search_query, selected_country, start_date, end_date):
         st.error(f"Failed to fetch news. Error {response.status_code}: {response.text}")
         return None
 
-# Display articles
 def display_articles(data, search_query, selected_country):
     """Display articles in a table with a download option."""
     if data:
@@ -111,7 +106,6 @@ def display_articles(data, search_query, selected_country):
     else:
         st.error("No articles found for the selected country and keyword.")
 
-# Display keyword reference in sidebar
 def display_keyword_reference():
     """Display keyword reference in the sidebar."""
     st.sidebar.title("Keyword Reference")
@@ -125,13 +119,11 @@ def display_keyword_reference():
             with st.sidebar.expander(category):
                 st.write(", ".join(items))
 
-# Streamlit App
 def main():
     st.title("Energy and Oil & Gas News Collector")
 
-    # Sidebar for filters
     st.sidebar.header("Search Filters")
-    search_query = st.sidebar.text_area("Enter Keywords (Space-Separated)", "")  # Manual input box
+    search_query = st.sidebar.text_area("Enter Keywords (Space-Separated)", "") 
 
     selected_country = st.sidebar.selectbox("Select a Country", ["All Countries"] + COUNTRIES)
     start_date = st.sidebar.date_input("Start Date", datetime(2024, 1, 1))
@@ -141,10 +133,8 @@ def main():
         st.sidebar.error("Start date cannot be after the end date.")
         return
 
-    # Display keyword reference
     display_keyword_reference()
 
-    # Fetch and display articles
     if st.sidebar.button("Fetch News"):
         formatted_query = format_query(search_query)
         data = fetch_articles(formatted_query, selected_country, start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
