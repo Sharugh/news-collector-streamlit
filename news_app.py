@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 from datetime import datetime
+from io import BytesIO  # Import BytesIO for in-memory file handling
 
 # Constants
 API_KEY = "a0c1c50cbbbed5659a779e082f9f1f00"  # Your GNews API key
@@ -109,9 +110,17 @@ def display_articles(data, search_query, selected_country):
         df = pd.DataFrame(data)
         st.write(f"### Articles related to '{search_query}' in {selected_country}:")
         st.dataframe(df)
+
+        # Create an in-memory Excel file
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine="openpyxl") as writer:
+            df.to_excel(writer, index=False)
+        output.seek(0)  # Reset the pointer to the beginning of the file
+
+        # Download button
         st.download_button(
             label="Download Articles",
-            data=df.to_excel(index=False, engine="openpyxl"),
+            data=output,
             file_name="news_articles.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
