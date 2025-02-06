@@ -1,4 +1,4 @@
- import streamlit as st
+import streamlit as st
 import requests
 import pandas as pd
 from datetime import datetime
@@ -69,9 +69,9 @@ def fetch_articles(search_query, selected_country, start_date, end_date):
     if selected_country != "All Countries":
         params["country"] = selected_country.lower()
 
-    try:
-        response = requests.get(GNEWS_URL, params=params)
-        response.raise_for_status()  # Raise an exception for HTTP errors
+    response = requests.get(GNEWS_URL, params=params)
+    
+    if response.status_code == 200:
         articles = response.json().get("articles", [])
         data = [
             {
@@ -84,11 +84,8 @@ def fetch_articles(search_query, selected_country, start_date, end_date):
             for article in articles
         ]
         return data
-    except requests.exceptions.HTTPError as err:
-        st.error(f"Failed to fetch news. Error: {err}")
-        return None
-    except Exception as e:
-        st.error(f"An unexpected error occurred: {e}")
+    else:
+        st.error(f"Failed to fetch news. Error {response.status_code}: {response.text}")
         return None
 
 # Display articles
