@@ -18,30 +18,6 @@ COUNTRIES = [
     "Belgium", "Portugal", "Greece", "Hungary", "Finland", "Ireland"
 ]
 
-KEYWORDS = {
-    "General Terms": [
-        "oil", "gas", "energy", "reservoir", "supply", "demand", "exploration", 
-        "production", "renewable", "petroleum", "natural gas", "refining", 
-        "pipeline", "offshore", "onshore", "CCUS", "carbon capture", 
-        "emissions", "climate", "storage", "drilling", "shale", "LNG", "biofuel"
-    ],
-    "Global Companies": [
-        "Shell", "BP", "Exxon", "Chevron", "Total", "Conoco", "Schlumberger", 
-        "Halliburton", "Baker Hughes", "Equinor", "Petrobras", "Gazprom", 
-        "Aramco", "ADNOC", "ENI", "Rosneft", "Repsol", "CNPC", "Sinopec", 
-        "CNOOC", "Phillips 66", "Valero Energy", "Marathon Petroleum"
-    ],
-    "Regional Companies": {
-        "India": ["ONGC", "IOC", "BPCL", "HPCL", "RIL", "Cairn"],
-        "Pakistan": [
-            "OGDCL", "PPL", "MPCL", "PSO", "ARL", "Byco", "NRL", 
-            "PARCO", "SNGPL", "SSGC", "Hascol", "Pak LNG", "TOR"
-        ],
-        "Sri Lanka": ["Ceylon Petroleum Corporation", "Lanka IOC"],
-        "Bangladesh": ["Petrobangla", "BAPEX"]
-    }
-}
-
 DEFAULT_KEYWORDS = [
     "oil", "gas", "energy", "reservoir", "supply", "demand", "exploration", "production",
     "renewable", "petroleum", "natural gas", "refining", "pipeline", "offshore", "onshore",
@@ -49,24 +25,27 @@ DEFAULT_KEYWORDS = [
     "LNG", "biofuel", "Shell", "BP", "Exxon", "Chevron", "Total"
 ]
 
-# Function to trim query to fit API character limits
-def trim_query(keywords):
-    """Trim keyword list to ensure query does not exceed 200 characters."""
-    query = ", ".join(keywords)
-    if len(query) > 200:
-        query = query[:197] + "..."  # Trim query length while keeping it valid
+# Function to format and limit query length
+def format_query(keywords):
+    """Ensure query format follows GNews API rules (space-separated, max 200 chars)."""
+    query = " ".join(keywords)  # Use space instead of commas
+    query = query[:200]  # Trim query length to avoid API errors
     return query
 
 # Fetch news articles from GNews API
 def fetch_articles(search_query, selected_country, start_date, end_date):
-    """Fetch articles from the GNews API within the 200-character query limit."""
+    """Fetch articles from the GNews API while ensuring valid query formatting."""
+    if not search_query.strip():  # Ensure query is not empty
+        st.error("Error: Search query is empty. Please enter valid keywords.")
+        return None
+
     params = {
         "q": search_query,
         "from": start_date,
         "to": end_date,
         "apikey": API_KEY,
         "lang": "en",
-        "max": 50  # Fetch up to 50 articles for performance
+        "max": 50  # Fetch up to 50 articles
     }
     if selected_country != "All Countries":
         params["country"] = selected_country.lower()
@@ -117,15 +96,8 @@ def display_articles(data, search_query, selected_country):
 def display_keyword_reference():
     """Display keyword reference in the sidebar."""
     st.sidebar.title("Keyword Reference")
-    for category, items in KEYWORDS.items():
-        if isinstance(items, dict):  # Region-based companies
-            with st.sidebar.expander(category):
-                for region, companies in items.items():
-                    st.write(f"**{region}:**")
-                    st.write(", ".join(companies))
-        else:  # General or Global Companies
-            with st.sidebar.expander(category):
-                st.write(", ".join(items))
+    with st.sidebar.expander("Available Keywords"):
+        st.write(", ".join(DEFAULT_KEYWORDS))
 
 # Streamlit App
 def main():
@@ -134,8 +106,8 @@ def main():
     # Sidebar for filters
     st.sidebar.header("Search Filters")
     selected_keywords = st.sidebar.multiselect("Select Keywords", DEFAULT_KEYWORDS, DEFAULT_KEYWORDS[:5])  
-    search_query = trim_query(selected_keywords)  # Ensuring query stays within 200 characters
-    
+    search_query = format_query(selected_keywords)  # Format query properly
+
     selected_country = st.sidebar.selectbox("Select a Country", ["All Countries"] + COUNTRIES)
     start_date = st.sidebar.date_input("Start Date", datetime(2024, 1, 1))
     end_date = st.sidebar.date_input("End Date", datetime.now())
