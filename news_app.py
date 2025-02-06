@@ -5,6 +5,7 @@ from datetime import datetime
 from io import BytesIO 
 
 API_KEY = "3087034a13564f75bfc769c0046e729c"  
+NEWSAPI_URL = "https://newsapi.org/v2/everything"  # Correct NewsAPI endpoint
 
 COUNTRIES = [
     "Afghanistan", "Bangladesh", "Bhutan", "India", "Maldives", "Nepal", "Pakistan", "Sri Lanka",
@@ -58,14 +59,14 @@ def fetch_articles(search_query, selected_country, start_date, end_date):
         "q": search_query,
         "from": start_date,
         "to": end_date,
-        "apikey": API_KEY,
-        "lang": "en",
-        "max": 50  # Fetch up to 50 articles
+        "apiKey": API_KEY,
+        "language": "en",
+        "pageSize": 50  # Fetch up to 50 articles
     }
     if selected_country != "All Countries":
         params["country"] = selected_country.lower()
 
-    response = requests.get(GNEWS_URL, params=params)
+    response = requests.get(NEWSAPI_URL, params=params)
     
     if response.status_code == 200:
         articles = response.json().get("articles", [])
