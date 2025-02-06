@@ -2,9 +2,10 @@ import streamlit as st
 import requests
 import pandas as pd
 from datetime import datetime
+from io import BytesIO
 
 # Constants
-API_KEY = "32c6b5f1df1642de8ff199fbe2d11f9d"
+API_KEY = "YOUR_NEWSAPI_KEY_HERE"  # Replace with your valid NewsAPI key
 
 COUNTRIES = [
     "Afghanistan", "Bangladesh", "Bhutan", "India", "Maldives", "Nepal", "Pakistan", "Sri Lanka",
@@ -16,131 +17,91 @@ COUNTRIES = [
     "Belgium", "Portugal", "Greece", "Hungary", "Finland", "Ireland"
 ]
 
-KEYWORDS = {
-    "General Terms": [
-        "oil", "gas", "energy", "reservoir", "supply", "demand", "exploration", 
-        "production", "renewable", "petroleum", "natural gas", "refining", 
-        "pipeline", "offshore", "onshore", "CCUS", "carbon capture", 
-        "emissions", "climate", "storage", "drilling", "shale", "LNG", "biofuel"
-    ],
-    "Global Companies": [
-        "Shell", "BP", "Exxon", "Chevron", "Total", "Conoco", "Schlumberger", 
-        "Halliburton", "Baker Hughes", "Equinor", "Petrobras", "Gazprom", 
-        "Aramco", "ADNOC", "ENI", "Rosneft", "Repsol", "CNPC", "Sinopec", 
-        "CNOOC", "Phillips 66", "Valero Energy", "Marathon Petroleum"
-    ],
-    "Regional Companies": {
-        "India": ["ONGC", "IOC", "BPCL", "HPCL", "RIL", "Cairn"],
-        "Pakistan": [
-            "OGDCL", "PPL", "MPCL", "PSO", "ARL", "Byco", "NRL", 
-            "PARCO", "SNGPL", "SSGC", "Hascol", "Pak LNG", "TOR"
-        ],
-        "Sri Lanka": ["Ceylon Petroleum Corporation", "Lanka IOC"],
-        "Bangladesh": ["Petrobangla", "BAPEX"]
-    }
-}
-
 DEFAULT_KEYWORDS = [
     "oil", "gas", "energy", "reservoir", "supply", "demand", "exploration", "production", "renewable",
     "petroleum", "natural gas", "refining", "pipeline", "offshore", "onshore", "CCUS", "carbon capture",
     "emissions", "climate", "storage", "drilling", "shale", "LNG", "biofuel", "Shell", "BP", "Exxon", 
-    "Chevron", "Total", "Conoco", "Schlumberger", "HAL", "Baker Hughes", "Statoil", "Petrobras", 
-    "Gazprom", "Aramco", "ADNOC", "ENI", "Rosneft", "Repsol", "CNPC", "Sinopec", "CNOOC", "ONGC", 
-    "IOC", "BPCL", "HPCL", "RIL", "Cairn", "OGDCL", "PPL", "MPCL", "PSO", "ARL", "Byco", "NRL", 
-    "PARCO", "SNGPL", "SSGC", "Hascol", "Pak LNG", "TOR", "ExxonMobil", "TotalEnergies", 
-    "ConocoPhillips", "Halliburton", "Equinor", "Saudi Aramco", "Eni", "Indian Oil Corporation", 
-    "Bharat Petroleum", "Hindustan Petroleum", "Reliance Industries", "Cairn Oil & Gas", 
-    "Pakistan Petroleum Limited", "Oil & Gas Development Company Limited", "Mari Petroleum Company Limited", 
-    "Pakistan State Oil", "Attock Refinery Limited", "Byco Petroleum Pakistan Limited", 
-    "National Refinery Limited", "Pak-Arab Refinery Limited", "Sui Northern Gas Pipelines Limited", 
-    "Sui Southern Gas Company Limited", "Hascol Petroleum Limited", "Pak LNG Limited", 
-    "Tariq Oil Refinery", "Ceylon Petroleum Corporation", "Lanka IOC", "Petrobangla", "BAPEX", 
-    "Phillips 66", "Valero Energy", "Marathon Petroleum"
+    "Chevron", "Total", "Conoco", "Schlumberger", "Halliburton", "Baker Hughes", "Equinor", "Petrobras",
+    "Gazprom", "Aramco", "ADNOC", "ENI", "Rosneft", "Repsol", "CNPC", "Sinopec", "CNOOC"
 ]
 
 # Helper Functions
-def display_keyword_reference():
-    """Display keyword reference in the sidebar."""
-    st.sidebar.title("Keyword Reference")
-    for category, items in KEYWORDS.items():
-        if isinstance(items, dict):  # Region-based companies
-            with st.sidebar.expander(category):
-                for region, companies in items.items():
-                    st.write(f"**{region}:**")
-                    st.write(", ".join(companies))
-        else:  # General or Global Companies
-            with st.sidebar.expander(category):
-                st.write(", ".join(items))
-
-def fetch_articles(search_query, selected_country, start_date, end_date):
-    """Fetch articles from the NewsAPI."""
-    url = f"https://newsapi.org/v2/everything?q={search_query}&from={start_date}&to={end_date}&apiKey={API_KEY}"
-    response = requests.get(url)
-    if response.status_code == 200:
+def fetch_articles(search_query, start_date, end_date):
+    """Fetch news articles from NewsAPI with error handling."""
+    url = f"https://newsapi.org/v2/everything?q={search_query}&from={start_date}&to={end_date}&language=en&sortBy=publishedAt&apiKey={API_KEY}"
+    
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raise error for HTTP errors (4xx, 5xx)
         articles = response.json().get("articles", [])
+
+        if not articles:
+            st.warning("No articles found for the given search parameters.")
+            return None
+
         data = []
         for article in articles[:100]:  # Limit to 100 articles
-            description = article.get("description", "")
-            if selected_country == "All Countries" or (
-                description and selected_country.lower() in description.lower()
-            ):
-                data.append({
-                    "Title": article.get("title"),
-                    "Description": description,
-                    "Published At": article.get("publishedAt"),
-                    "Source": article.get("source", {}).get("name"),
-                    "URL": article.get("url")
-                })
-        return data
-    else:
-        st.error("Failed to fetch news. Please check your API key or try again later.")
-        return None
+            data.append({
+                "Title": article.get("title"),
+                "Description": article.get("description"),
+                "Published At": article.get("publishedAt"),
+                "Source": article.get("source", {}).get("name"),
+                "URL": article.get("url")
+            })
+        return pd.DataFrame(data)
 
-def display_articles(data, search_query, selected_country):
-    """Display articles in a DataFrame and provide a download option."""
-    if data:
-        df = pd.DataFrame(data)
-        st.write(f"### Articles related to '{search_query}' in {selected_country}:")
-        st.dataframe(df)
-        st.download_button(
-            label="Download Articles",
-            data=df.to_excel(index=False, engine="openpyxl"),
-            file_name="news_articles.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-    else:
-        st.error("No articles found for the selected country and keyword.")
+    except requests.exceptions.HTTPError as http_err:
+        st.error(f"HTTP error occurred: {http_err}")
+    except requests.exceptions.RequestException as req_err:
+        st.error(f"Request error occurred: {req_err}")
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
+
+    return None
+
+def convert_df_to_excel(df):
+    """Convert a DataFrame to an Excel file in memory."""
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False)
+    processed_data = output.getvalue()
+    return processed_data
 
 # Streamlit App
 def main():
-    st.title("Energy and Oil & Gas News Collector")
+    st.title("🔍 Energy & Oil & Gas News Collector")
 
-    # Sidebar for filters and keyword reference
-    st.sidebar.header("Search Filters")
-    search_query = st.sidebar.text_input("Enter Keywords", value=", ".join(DEFAULT_KEYWORDS))
-    selected_country = st.sidebar.selectbox("Select a Country", ["All Countries"] + COUNTRIES)
+    # Sidebar Filters
+    st.sidebar.header("🔎 Search Filters")
+    search_query = st.sidebar.text_area("Enter Keywords (comma-separated)", value=", ".join(DEFAULT_KEYWORDS))
     start_date = st.sidebar.date_input("Start Date", datetime(2024, 1, 1))
     end_date = st.sidebar.date_input("End Date", datetime.now())
 
-    # Validate dates
+    # Validate Dates
     if start_date > end_date:
-        st.sidebar.error("Start date cannot be after end date.")
+        st.sidebar.error("⚠️ Start date cannot be after end date.")
         return
 
-    # Display keyword reference
-    display_keyword_reference()
-
-    # Fetch and display articles
-    if st.sidebar.button("Fetch News"):
-        data = fetch_articles(search_query, selected_country, start_date, end_date)
+    # Fetch and Display Articles
+    if st.sidebar.button("📢 Fetch News"):
+        st.info("Fetching latest news articles... Please wait.")
+        data = fetch_articles(search_query, start_date, end_date)
         if data is not None:
-            display_articles(data, search_query, selected_country)
+            st.write(f"### 📌 Articles related to `{search_query}`:")
+            st.dataframe(data)
+
+            # Download Button
+            excel_data = convert_df_to_excel(data)
+            st.download_button(
+                label="📥 Download Articles (Excel)",
+                data=excel_data,
+                file_name="news_articles.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
 
     # Footer
     st.write("\n---")
-    st.write(
-        "This app collects the latest news articles related to energy and oil & gas industries, filtered by keywords and countries."
-    )
+    st.write("📌 This app collects the latest news articles related to energy and oil & gas industries, filtered by keywords.")
 
 if __name__ == "__main__":
     main()
