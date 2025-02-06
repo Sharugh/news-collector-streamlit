@@ -18,19 +18,38 @@ COUNTRIES = [
     "Belgium", "Portugal", "Greece", "Hungary", "Finland", "Ireland"
 ]
 
-DEFAULT_KEYWORDS = [
-    "oil", "gas", "energy", "reservoir", "supply", "demand", "exploration", "production",
-    "renewable", "petroleum", "natural gas", "refining", "pipeline", "offshore", "onshore",
-    "CCUS", "carbon capture", "emissions", "climate", "storage", "drilling", "shale",
-    "LNG", "biofuel", "Shell", "BP", "Exxon", "Chevron", "Total"
-]
+KEYWORDS = {
+    "General Terms": [
+        "oil", "gas", "energy", "reservoir", "supply", "demand", "exploration", 
+        "production", "renewable", "petroleum", "natural gas", "refining", 
+        "pipeline", "offshore", "onshore", "CCUS", "carbon capture", 
+        "emissions", "climate", "storage", "drilling", "shale", "LNG", "biofuel"
+    ],
+    "Global Companies": [
+        "Shell", "BP", "ExxonMobil", "Chevron", "TotalEnergies", "ConocoPhillips", 
+        "Schlumberger", "Halliburton", "Baker Hughes", "Equinor", "Petrobras", "Gazprom", 
+        "Saudi Aramco", "ADNOC", "ENI", "Rosneft", "Repsol", "CNPC", "Sinopec", "CNOOC", 
+        "Phillips 66", "Valero Energy", "Marathon Petroleum"
+    ],
+    "Regional Companies": {
+        "India": ["ONGC", "Indian Oil Corporation (IOC)", "Bharat Petroleum (BPCL)", "Hindustan Petroleum (HPCL)", "Reliance Industries (RIL)", "Cairn Oil & Gas"],
+        "Pakistan": [
+            "Oil & Gas Development Company Limited (OGDCL)", "Pakistan Petroleum Limited (PPL)", "Mari Petroleum Company Limited (MPCL)", 
+            "Pakistan State Oil (PSO)", "Attock Refinery Limited (ARL)", "Byco Petroleum Pakistan Limited (Byco)", 
+            "National Refinery Limited (NRL)", "Pak-Arab Refinery Limited (PARCO)", "Sui Northern Gas Pipelines Limited (SNGPL)", 
+            "Sui Southern Gas Company Limited (SSGC)", "Hascol Petroleum Limited", "Pak LNG Limited", "Tariq Oil Refinery (TOR)"
+        ],
+        "Sri Lanka": ["Ceylon Petroleum Corporation", "Lanka IOC"],
+        "Bangladesh": ["Petrobangla", "Bangladesh Petroleum Exploration and Production Company Limited (BAPEX)"]
+    }
+}
 
 # Function to format and limit query length
-def format_query(keywords):
-    """Ensure query format follows GNews API rules (space-separated, max 200 chars)."""
-    query = " ".join(keywords)  # Use space instead of commas
-    query = query[:200]  # Trim query length to avoid API errors
-    return query
+def format_query(query):
+    """Ensure the query follows API rules (space-separated, max 200 chars)."""
+    query = query.strip()  # Remove extra spaces
+    query = " ".join(query.split())  # Ensure proper spacing
+    return query[:200]  # Trim to 200 characters to prevent errors
 
 # Fetch news articles from GNews API
 def fetch_articles(search_query, selected_country, start_date, end_date):
@@ -96,8 +115,15 @@ def display_articles(data, search_query, selected_country):
 def display_keyword_reference():
     """Display keyword reference in the sidebar."""
     st.sidebar.title("Keyword Reference")
-    with st.sidebar.expander("Available Keywords"):
-        st.write(", ".join(DEFAULT_KEYWORDS))
+    for category, items in KEYWORDS.items():
+        if isinstance(items, dict):  # Region-based companies
+            with st.sidebar.expander(category):
+                for region, companies in items.items():
+                    st.write(f"**{region}:**")
+                    st.write(", ".join(companies))
+        else:  # General or Global Companies
+            with st.sidebar.expander(category):
+                st.write(", ".join(items))
 
 # Streamlit App
 def main():
@@ -105,8 +131,7 @@ def main():
 
     # Sidebar for filters
     st.sidebar.header("Search Filters")
-    selected_keywords = st.sidebar.multiselect("Select Keywords", DEFAULT_KEYWORDS, DEFAULT_KEYWORDS[:5])  
-    search_query = format_query(selected_keywords)  # Format query properly
+    search_query = st.sidebar.text_area("Enter Keywords (Space-Separated)", "")  # Manual input box
 
     selected_country = st.sidebar.selectbox("Select a Country", ["All Countries"] + COUNTRIES)
     start_date = st.sidebar.date_input("Start Date", datetime(2024, 1, 1))
@@ -121,9 +146,10 @@ def main():
 
     # Fetch and display articles
     if st.sidebar.button("Fetch News"):
-        data = fetch_articles(search_query, selected_country, start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
+        formatted_query = format_query(search_query)
+        data = fetch_articles(formatted_query, selected_country, start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
         if data:
-            display_articles(data, search_query, selected_country)
+            display_articles(data, formatted_query, selected_country)
 
 if __name__ == "__main__":
     main()
