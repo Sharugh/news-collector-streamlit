@@ -2,9 +2,9 @@ import streamlit as st
 import requests
 import pandas as pd
 from datetime import datetime
-from io import BytesIO 
+from io import BytesIO
 
-API_KEY = "3087034a13564f75bfc769c0046e729c"  
+API_KEY = "3087034a13564f75bfc769c0046e729c"
 NEWSAPI_URL = "https://newsapi.org/v2/everything"  # Correct NewsAPI endpoint
 
 COUNTRIES = [
@@ -13,30 +13,30 @@ COUNTRIES = [
     "China", "Japan", "South Korea", "Australia", "New Zealand", "Brazil", "Mexico", "South Africa",
     "Nigeria", "Egypt", "Turkey", "Saudi Arabia", "United Arab Emirates", "Argentina", "Colombia",
     "Indonesia", "Thailand", "Malaysia", "Singapore", "Vietnam", "Philippines", "Netherlands",
-    "Sweden", "Norway", "Denmark", "Switzerland", "Poland", "Czech Republic", "Austria",
-    "Belgium", "Portugal", "Greece", "Hungary", "Finland", "Ireland"
+    "Sweden", "Norway", "Denmark", "Switzerland", "Poland", "Czech Republic", "Austria", "Belgium",
+    "Portugal", "Greece", "Hungary", "Finland", "Ireland"
 ]
 
 KEYWORDS = {
     "General Terms": [
-        "oil", "gas", "energy", "reservoir", "supply", "demand", "exploration", 
-        "production", "renewable", "petroleum", "natural gas", "refining", 
-        "pipeline", "offshore", "onshore", "CCUS", "carbon capture", 
-        "emissions", "climate", "storage", "drilling", "shale", "LNG", "biofuel"
+        "oil", "gas", "energy", "reservoir", "supply", "demand", "exploration", "production",
+        "renewable", "petroleum", "natural gas", "refining", "pipeline", "offshore", "onshore",
+        "CCUS", "carbon capture", "emissions", "climate", "storage", "drilling", "shale", "LNG", "biofuel"
     ],
     "Global Companies": [
-        "Shell", "BP", "ExxonMobil", "Chevron", "TotalEnergies", "ConocoPhillips", 
-        "Schlumberger", "Halliburton", "Baker Hughes", "Equinor", "Petrobras", "Gazprom", 
-        "Saudi Aramco", "ADNOC", "ENI", "Rosneft", "Repsol", "CNPC", "Sinopec", "CNOOC", 
-        "Phillips 66", "Valero Energy", "Marathon Petroleum"
+        "Shell", "BP", "ExxonMobil", "Chevron", "TotalEnergies", "ConocoPhillips", "Schlumberger",
+        "Halliburton", "Baker Hughes", "Equinor", "Petrobras", "Gazprom", "Saudi Aramco", "ADNOC",
+        "ENI", "Rosneft", "Repsol", "CNPC", "Sinopec", "CNOOC", "Phillips 66", "Valero Energy",
+        "Marathon Petroleum"
     ],
     "Regional Companies": {
         "India": ["ONGC", "Indian Oil Corporation (IOC)", "Bharat Petroleum (BPCL)", "Hindustan Petroleum (HPCL)", "Reliance Industries (RIL)", "Cairn Oil & Gas"],
         "Pakistan": [
-            "Oil & Gas Development Company Limited (OGDCL)", "Pakistan Petroleum Limited (PPL)", "Mari Petroleum Company Limited (MPCL)", 
-            "Pakistan State Oil (PSO)", "Attock Refinery Limited (ARL)", "Byco Petroleum Pakistan Limited (Byco)", 
-            "National Refinery Limited (NRL)", "Pak-Arab Refinery Limited (PARCO)", "Sui Northern Gas Pipelines Limited (SNGPL)", 
-            "Sui Southern Gas Company Limited (SSGC)", "Hascol Petroleum Limited", "Pak LNG Limited", "Tariq Oil Refinery (TOR)"
+            "Oil & Gas Development Company Limited (OGDCL)", "Pakistan Petroleum Limited (PPL)",
+            "Mari Petroleum Company Limited (MPCL)", "Pakistan State Oil (PSO)", "Attock Refinery Limited (ARL)",
+            "Byco Petroleum Pakistan Limited (Byco)", "National Refinery Limited (NRL)", "Pak-Arab Refinery Limited (PARCO)",
+            "Sui Northern Gas Pipelines Limited (SNGPL)", "Sui Southern Gas Company Limited (SSGC)", "Hascol Petroleum Limited",
+            "Pak LNG Limited", "Tariq Oil Refinery (TOR)"
         ],
         "Sri Lanka": ["Ceylon Petroleum Corporation", "Lanka IOC"],
         "Bangladesh": ["Petrobangla", "Bangladesh Petroleum Exploration and Production Company Limited (BAPEX)"]
@@ -49,7 +49,7 @@ def format_query(query):
     query = " ".join(query.split())  # Ensure proper spacing
     return query[:200]  # Trim to 200 characters to prevent errors
 
-def fetch_articles(search_query, selected_country, start_date, end_date):
+def fetch_articles(search_query, start_date, end_date):
     """Fetch articles from the NewsAPI while ensuring valid query formatting."""
     if not search_query.strip():  # Ensure query is not empty
         st.error("Error: Search query is empty. Please enter valid keywords.")
@@ -63,11 +63,8 @@ def fetch_articles(search_query, selected_country, start_date, end_date):
         "language": "en",
         "pageSize": 50  # Fetch up to 50 articles
     }
-    if selected_country != "All Countries":
-        params["country"] = selected_country.lower()
 
     response = requests.get(NEWSAPI_URL, params=params)
-    
     if response.status_code == 200:
         articles = response.json().get("articles", [])
         data = [
@@ -97,7 +94,6 @@ def display_articles(data, search_query, selected_country):
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
             df.to_excel(writer, index=False)
         output.seek(0)
-
         st.download_button(
             label="Download Articles",
             data=output,
@@ -122,10 +118,8 @@ def display_keyword_reference():
 
 def main():
     st.title("Energy and Oil & Gas News Collector")
-
     st.sidebar.header("Search Filters")
-    search_query = st.sidebar.text_area("Enter Keywords (Space-Separated)", "") 
-
+    search_query = st.sidebar.text_area("Enter Keywords (Space-Separated)", "")
     selected_country = st.sidebar.selectbox("Select a Country", ["All Countries"] + COUNTRIES)
     start_date = st.sidebar.date_input("Start Date", datetime(2024, 1, 1))
     end_date = st.sidebar.date_input("End Date", datetime.now())
@@ -138,7 +132,7 @@ def main():
 
     if st.sidebar.button("Fetch News"):
         formatted_query = format_query(search_query)
-        data = fetch_articles(formatted_query, selected_country, start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
+        data = fetch_articles(formatted_query, start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
         if data:
             display_articles(data, formatted_query, selected_country)
 
