@@ -5,7 +5,7 @@ from datetime import datetime
 from io import BytesIO
 
 API_KEY = "3087034a13564f75bfc769c0046e729c"
-NEWSAPI_URL = "https://newsapi.org/v2/everything"  # Correct NewsAPI endpoint
+NEWSAPI_URL = "https://newsapi.org/v2/everything"  
 
 COUNTRIES = [
     "Afghanistan", "Bangladesh", "Bhutan", "India", "Maldives", "Nepal", "Pakistan", "Sri Lanka",
@@ -89,7 +89,6 @@ def display_articles(data, search_query, selected_country):
         st.write(f"### News related to '{search_query}' in {selected_country}:")
         st.dataframe(df)
 
-        # Download as Excel
         output = BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
             df.to_excel(writer, index=False)
