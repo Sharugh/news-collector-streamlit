@@ -21,7 +21,7 @@ KEYWORDS = {
     "General Terms": [
         "oil", "gas", "energy", "reservoir", "supply", "demand", "exploration", "production",
         "renewable", "petroleum", "natural gas", "refining", "pipeline", "offshore", "onshore",
-        "CCUS", "carbon capture", "emissions", "climate", "storage", "drilling", "shale", "LNG", "biofuel"
+        "CCUS", "carbon capture", "emissions", "climate", "storage", "drilling", "shale", "LNG", "biofuel" , "India Energy Week" , "IEW"
     ],
     "Global Companies": [
         "Shell", "BP", "ExxonMobil", "Chevron", "TotalEnergies", "ConocoPhillips", "Schlumberger",
@@ -61,7 +61,7 @@ def fetch_articles(search_query, start_date, end_date):
         "to": end_date,
         "apiKey": API_KEY,
         "language": "en",
-        "pageSize": 50  # Fetch up to 50 articles
+        "pageSize": 150  # Fetch up to 50 articles
     }
 
     response = requests.get(NEWSAPI_URL, params=params)
