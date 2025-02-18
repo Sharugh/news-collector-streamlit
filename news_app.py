@@ -61,7 +61,7 @@ def fetch_articles(search_query, start_date, end_date):
         "to": end_date,
         "apiKey": API_KEY,
         "language": "en",
-        "pageSize": 150  # Fetch up to 50 articles
+        "pageSize": 100  # Fetch up to 50 articles
     }
 
     response = requests.get(NEWSAPI_URL, params=params)
