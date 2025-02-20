@@ -1,6 +1,8 @@
 streamlit
-requests
 pandas
+requests
 openpyxl
+torch 
+torchvision
+torchaudio
 transformers
-torch
