@@ -3,13 +3,13 @@ import requests
 import pandas as pd
 from datetime import datetime
 from io import BytesIO
-from transformers import pipeline
 
-API_KEY = "3087034a13564f75bfc769c0046e729c"
+# API Keys
+NEWSAPI_KEY = "3087034a13564f75bfc769c0046e729c"
 NEWSAPI_URL = "https://newsapi.org/v2/everything"
 
-# Load summarization model
-summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+SPARK_ASSIST_API_KEY = "eyJraWQiOiJCVG1JZlI4QkppX1RNMDAtWGhEaF9wR3ZrS0x2YnR2V3BJOXhjWXdfVVpFIiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULkZmeUdMbS04ZHlYVVUwb1A5M2UxY0dQZmxVbVpyNjVVYzhDZWZhTjNJb1Eub2FyMnpucDEybk5VUGhCcGs1ZDciLCJpc3MiOiJodHRwczovL3NwZ2xvYmFsLm9rdGEuY29tL29hdXRoMi9kZWZhdWx0IiwiYXVkIjoiYXBpOi8vZGVmYXVsdCIsImlhdCI6MTc0MDA1MzU5OCwiZXhwIjoxNzQwMDU3MTk4LCJjaWQiOiIwb2Fld3gyeGxudE9jMVFUazVkNyIsInVpZCI6IjAwdWxkcTBweXJDZlhjZng5NWQ3Iiwic2NwIjpbIm9mZmxpbmVfYWNjZXNzIiwiZW1haWwiLCJvcGVuaWQiLCJwcm9maWxlIl0sImF1dGhfdGltZSI6MTc0MDA1MzU5NiwiY291bnRyeSI6IklORElBIiwic3ViIjoic2hhcnVnaC5hQHNwZ2xvYmFsLmNvbSJ9.S-3ki-rXQAU7SlZqawHU6z7_TNnyBjfDCdRvV1mgs_nZrp-En7A_ZB7Nbk28_GbHKD_iwi8XXqdt7WCltlat8ImS16QQMBbepwPpqW6rXUf34vSgZkVFUhAHzOFWvR1HwYvY0TYpp6Xtil1JFwsnf-QJwqGCIJuE8DabDhnRq2aQJkYwCinjxVZBo3OtYuom1DlsFxL1UbJfvmhlGmsJTLixbnnsVcAIzHPPmfycu-bf7g12BFSlmISrHfx7JJX7koWeLNqV_pOLp13OOzzVYljEUq6FmxGKPUCm-AHA9B-uO9a_Sa6tiYtQdRwZrBM87RLBB6oOc0BJBBkkUSt_nQ"
+SPARK_ASSIST_URL = "https://spark.spglobal.com/settings"  # Replace with actual Spark Assist API URL
 
 COUNTRIES = [
     "Afghanistan", "Bangladesh", "Bhutan", "India", "Maldives", "Nepal", "Pakistan", "Sri Lanka",
@@ -48,20 +48,35 @@ KEYWORDS = {
 }
 
 def format_query(query):
-    """Ensure the query follows API rules (space-separated, max 200 chars)."""
-    query = query.strip()  # Remove extra spaces
-    query = " ".join(query.split())  # Ensure proper spacing
-    return query[:200]  # Trim to 200 characters to prevent errors
+    """Ensure query follows API rules (space-separated, max 200 chars)."""
+    query = query.strip()  
+    query = " ".join(query.split())  
+    return query[:200]  
 
-def summarize_text(text):
-    """Summarize the article description using NLP."""
-    if text and len(text) > 50:  # Only summarize if there's enough content
-        summary = summarizer(text, max_length=50, min_length=20, do_sample=False)
-        return summary[0]['summary_text']
-    return "No summary available"
+def summarize_text_spark_assist(text):
+    """Summarize article description using Spark Assist API."""
+    if not text or len(text) < 50:
+        return "No summary available"
+
+    payload = {
+        "model": "openAI-4o",
+        "messages": [{"role": "user", "content": f"Summarize this article: {text}"}],
+        "temperature": 0.5
+    }
+
+    headers = {"Authorization": f"Bearer {SPARK_ASSIST_API_KEY}", "Content-Type": "application/json"}
+
+    try:
+        response = requests.post(SPARK_ASSIST_URL, json=payload, headers=headers)
+        if response.status_code == 200:
+            return response.json().get("choices", [{}])[0].get("message", {}).get("content", "No summary available")
+        else:
+            return f"Error in summarization: {response.status_code}"
+    except Exception as e:
+        return f"Summarization failed: {e}"
 
 def fetch_articles(search_query, start_date, end_date):
-    """Fetch articles and summarize them."""
+    """Fetch articles from NewsAPI."""
     if not search_query.strip():
         st.error("Error: Search query is empty. Please enter valid keywords.")
         return None
@@ -70,9 +85,9 @@ def fetch_articles(search_query, start_date, end_date):
         "q": search_query,
         "from": start_date,
         "to": end_date,
-        "apiKey": API_KEY,
+        "apiKey": NEWSAPI_KEY,
         "language": "en",
-        "pageSize": 100  # Fetch up to 100 articles
+        "pageSize": 100  
     }
 
     response = requests.get(NEWSAPI_URL, params=params)
@@ -85,7 +100,7 @@ def fetch_articles(search_query, start_date, end_date):
                 "Published At": article.get("publishedAt"),
                 "Source": article.get("source", {}).get("name"),
                 "URL": article.get("url"),
-                "Summary": summarize_text(article.get("description"))  # Generate summary
+                "Summary": summarize_text_spark_assist(article.get("description"))
             }
             for article in articles
         ]
@@ -95,7 +110,7 @@ def fetch_articles(search_query, start_date, end_date):
         return None
 
 def display_articles(data, search_query, selected_country):
-    """Display articles in a table with a download option."""
+    """Display articles and enable downloading."""
     if data:
         df = pd.DataFrame(data)
         st.write(f"### News related to '{search_query}' in {selected_country}:")
@@ -112,18 +127,18 @@ def display_articles(data, search_query, selected_country):
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
     else:
-        st.error("No articles found for the selected country and keyword.")
+        st.error("No articles found.")
 
 def display_keyword_reference():
-    """Display keyword reference in the sidebar."""
+    """Display keywords in sidebar."""
     st.sidebar.title("Keyword Reference")
     for category, items in KEYWORDS.items():
-        if isinstance(items, dict):  # Region-based companies
+        if isinstance(items, dict):
             with st.sidebar.expander(category):
                 for region, companies in items.items():
                     st.write(f"**{region}:**")
                     st.write(", ".join(companies))
-        else:  # General or Global Companies
+        else:
             with st.sidebar.expander(category):
                 st.write(", ".join(items))
 
