@@ -8,9 +8,6 @@ from io import BytesIO
 NEWSAPI_KEY = "3087034a13564f75bfc769c0046e729c"
 NEWSAPI_URL = "https://newsapi.org/v2/everything"
 
-SPARK_ASSIST_API_KEY = "eyJraWQiOiJCVG1JZlI4QkppX1RNMDAtWGhEaF9wR3ZrS0x2YnR2V3BJOXhjWXdfVVpFIiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULkZmeUdMbS04ZHlYVVUwb1A5M2UxY0dQZmxVbVpyNjVVYzhDZWZhTjNJb1Eub2FyMnpucDEybk5VUGhCcGs1ZDciLCJpc3MiOiJodHRwczovL3NwZ2xvYmFsLm9rdGEuY29tL29hdXRoMi9kZWZhdWx0IiwiYXVkIjoiYXBpOi8vZGVmYXVsdCIsImlhdCI6MTc0MDA1MzU5OCwiZXhwIjoxNzQwMDU3MTk4LCJjaWQiOiIwb2Fld3gyeGxudE9jMVFUazVkNyIsInVpZCI6IjAwdWxkcTBweXJDZlhjZng5NWQ3Iiwic2NwIjpbIm9mZmxpbmVfYWNjZXNzIiwiZW1haWwiLCJvcGVuaWQiLCJwcm9maWxlIl0sImF1dGhfdGltZSI6MTc0MDA1MzU5NiwiY291bnRyeSI6IklORElBIiwic3ViIjoic2hhcnVnaC5hQHNwZ2xvYmFsLmNvbSJ9.S-3ki-rXQAU7SlZqawHU6z7_TNnyBjfDCdRvV1mgs_nZrp-En7A_ZB7Nbk28_GbHKD_iwi8XXqdt7WCltlat8ImS16QQMBbepwPpqW6rXUf34vSgZkVFUhAHzOFWvR1HwYvY0TYpp6Xtil1JFwsnf-QJwqGCIJuE8DabDhnRq2aQJkYwCinjxVZBo3OtYuom1DlsFxL1UbJfvmhlGmsJTLixbnnsVcAIzHPPmfycu-bf7g12BFSlmISrHfx7JJX7koWeLNqV_pOLp13OOzzVYljEUq6FmxGKPUCm-AHA9B-uO9a_Sa6tiYtQdRwZrBM87RLBB6oOc0BJBBkkUSt_nQ"
-SPARK_ASSIST_URL = "https://spark.spglobal.com/settings"  # Replace with actual Spark Assist API URL
-
 COUNTRIES = [
     "Afghanistan", "Bangladesh", "Bhutan", "India", "Maldives", "Nepal", "Pakistan", "Sri Lanka",
     "United States", "Canada", "United Kingdom", "Germany", "France", "Italy", "Spain", "Russia",
